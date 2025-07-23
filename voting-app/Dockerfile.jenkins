@@ -12,6 +12,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y docker-ce-cli docker-compose-plugin && \
     groupadd docker && \
-    usermod -aG docker jenkins
+    usermod -aG docker jenkins && \
+    chmod 666 /var/run/docker.sock
 
 USER jenkins
