@@ -1,10 +1,15 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'docker:20.10.16-dind'
+      args '--privileged'
+    }
+  }
 
   stages {
-    stage('Clone') {
+    stage('Checkout') {
       steps {
-        echo 'Code cloné automatiquement par Jenkins depuis Git'
+        checkout scm
       }
     }
 
@@ -26,9 +31,9 @@ pipeline {
       steps {
         echo 'Vérification des conteneurs...'
         script {
-          def result = sh(script: 'docker ps --filter "health=unhealthy" --format "{{.Names}}"', returnStdout: true).trim()
-          if (result) {
-            error "Certains conteneurs sont en erreur: ${result}"
+          def unhealthy = sh(script: 'docker ps --filter "health=unhealthy" --format "{{.Names}}"', returnStdout: true).trim()
+          if (unhealthy) {
+            error "Certains conteneurs sont en erreur: ${unhealthy}"
           }
         }
       }
