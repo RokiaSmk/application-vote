@@ -1,0 +1,7 @@
+docker run --name monjenkins --restart=on-failure --detach \
+    --network jenkins-network \
+    --env DOCKER_HOST=unix://var/run/docker.sock \
+    --volume /var/run/docker.sock:/var/run/docker.sock \
+    --volume jenkins-data:/var/jenkins_home \
+    --publish 8080:8080 --publish 50000:50000 \
+    jenkins-docker
