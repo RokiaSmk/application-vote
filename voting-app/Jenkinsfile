@@ -45,5 +45,15 @@ pipeline {
                 }
             }
         }
+
+        stage('Déployer') {
+            steps {
+                sshagent(['ssh-credentials-id']) {
+                    sh """
+                    ssh user@serveur 'cd /chemin/du/projet && docker-compose pull && docker-compose up -d'
+                    """
+                }
+            }
+        }
     }
 }
