@@ -56,4 +56,25 @@ pipeline {
             }
         }
     }
+    post {
+        success {
+            echo 'Déploiement réussi !'
+            // Exemple : notifier par mail
+            mail to: 'ton.email@example.com',
+                 subject: "Build ${env.BUILD_NUMBER} réussi",
+                 body: "Le build Jenkins numéro ${env.BUILD_NUMBER} a été déployé avec succès."
+        }
+        failure {
+            echo 'Le déploiement a échoué.'
+            // Exemple : notifier par mail
+            mail to: 'ton.email@example.com',
+                 subject: "Build ${env.BUILD_NUMBER} échoué",
+                 body: "Le build Jenkins numéro ${env.BUILD_NUMBER} a échoué. Veuillez vérifier les logs."
+        }
+        always {
+            echo 'Fin du pipeline.'
+            // Exemple : nettoyer des fichiers temporaires
+            cleanWs()
+        }
+    }
 }
