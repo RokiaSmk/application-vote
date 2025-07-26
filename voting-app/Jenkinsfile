@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Identifiants Jenkins pour Docker Hub
-        DOCKERHUB_CREDENTIALS = credentials('espoir10')
+        DOCKERHUB_CREDENTIALS = credentials('rosiasmk')
         
         // Tag d'image basé sur le numéro de build Jenkins
         IMAGE_TAG = "v${BUILD_NUMBER}"
