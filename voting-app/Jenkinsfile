@@ -1,20 +1,28 @@
 pipeline {
     agent any
+
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('rosiasmk')  // ID des credentials dans Jenkins
-        IMAGE_TAG = "v${BUILD_NUMBER}"                   // Tag dynamique basé sur le numéro de build
+        // Identifiants Jenkins pour Docker Hub
+        DOCKERHUB_CREDENTIALS = credentials('espoir10')
+        
+        // Tag d'image basé sur le numéro de build Jenkins
+        IMAGE_TAG = "v${BUILD_NUMBER}"
     }
+
     stages {
+
+        // Étape 1 : Clonage du dépôt Git
         stage('Cloner le dépôt') {
             steps {
                 git branch: 'main', url: 'https://github.com/RokiaSmk/application-vote'
             }
         }
-        
+
+        // Étape 2 : Build des images Docker pour chaque service
         stage('Build Images') {
             steps {
                 script {
-                    def services = ['vote', 'worker', 'result']  // Liste des services à construire
+                    def services = ['vote', 'worker', 'result']
                     for (service in services) {
                         sh """
                         cd voting-app/${service}
@@ -25,13 +33,15 @@ pipeline {
                 }
             }
         }
-        
+
+        // Étape 3 : Connexion à Docker Hub
         stage('Login to Docker Hub') {
             steps {
                 sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
             }
         }
 
+        // Étape 4 : Push des images Docker sur Docker Hub
         stage('Push Images') {
             steps {
                 script {
@@ -46,34 +56,28 @@ pipeline {
             }
         }
 
-        stage('Déployer') {
+        // Étape 5 : Déploiement avec docker-compose
+        stage('Deploy') {
             steps {
-                sshagent(['ssh-credentials-id']) {
-                    sh """
-                    ssh user@serveur 'cd /chemin/du/projet && docker-compose pull && docker-compose up -d'
-                    """
-                }
+                sh """
+                docker-compose down || true
+                docker-compose pull
+                docker-compose up -d
+                """
             }
         }
     }
+
+    // Post-actions : exécutées quelle que soit l’issue du pipeline
     post {
         success {
-            echo 'Déploiement réussi !'
-            // Exemple : notifier par mail
-            mail to: 'ton.email@example.com',
-                 subject: "Build ${env.BUILD_NUMBER} réussi",
-                 body: "Le build Jenkins numéro ${env.BUILD_NUMBER} a été déployé avec succès."
+            echo 'Pipeline exécutée avec succès !'
         }
         failure {
-            echo 'Le déploiement a échoué.'
-            // Exemple : notifier par mail
-            mail to: 'ton.email@example.com',
-                 subject: "Build ${env.BUILD_NUMBER} échoué",
-                 body: "Le build Jenkins numéro ${env.BUILD_NUMBER} a échoué. Veuillez vérifier les logs."
+            echo 'La pipeline a échoué.'
         }
         always {
-            echo 'Fin du pipeline.'
-            // Exemple : nettoyer des fichiers temporaires
+            echo 'Nettoyage de l’espace de travail...'
             cleanWs()
         }
     }
