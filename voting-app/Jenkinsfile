@@ -70,16 +70,33 @@ pipeline {
     }
 
     // Post-actions : exécutées quelle que soit l’issue du pipeline
+
+
     post {
         success {
-            echo 'Pipeline exécutée avec succès !'
+            emailext(
+                subject: "✅ Pipeline réussi : ${env.JOB_NAME} [#${env.BUILD_NUMBER}]",
+                body: "Le pipeline Jenkins pour ${env.JOB_NAME} a été exécuté avec succès.\n\nConsultez les détails ici : ${env.BUILD_URL}",
+                to: 'rsamake96@gmail.com',
+                mimeType: 'text/plain',
+                replyTo: 'rsamake96@gmail.com',
+                
+            )
         }
+
         failure {
-            echo 'La pipeline a échoué.'
+            emailext(
+                to: 'rsamake96@gmail.com',
+                subject: "❌ Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Le build a échoué. Voir les logs : ${env.BUILD_URL}",
+                mimeType: 'text/plain',
+                replyTo: 'rsamake96@gmail.com',
+                
+            )
         }
-        always {
+	always {
             echo 'Nettoyage de l’espace de travail...'
             cleanWs()
         }
-    }
+      }
 }
